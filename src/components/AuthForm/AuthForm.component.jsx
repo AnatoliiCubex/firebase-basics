@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 
-import { auth } from "../../config/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, googleProvider } from "../../config/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 
 export const AuthFormComponent = () => {
   const [userData, setUserData] = useState({
@@ -9,7 +13,7 @@ export const AuthFormComponent = () => {
     password: "",
   });
 
-  const handleCreateUser = async (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     try {
       await createUserWithEmailAndPassword(
@@ -17,39 +21,58 @@ export const AuthFormComponent = () => {
         userData.email,
         userData.password
       );
-      setUserData({ email: "", password: "" });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSignInWithGoogle = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <form onSubmit={handleCreateUser}>
-      <input
-        placeholder='Email...'
-        name='email'
-        value={userData.email}
-        onChange={(e) =>
-          setUserData((prev) => ({
-            ...prev,
-            email: e.target.value,
-          }))
-        }
-      />
-      <input
-        type='password'
-        placeholder='Password...'
-        name='password'
-        value={userData.password}
-        onChange={(e) =>
-          setUserData((prev) => ({
-            ...prev,
-            password: e.target.value,
-          }))
-        }
-      />
-      <button type='submit'>Sign in</button>
-    </form>
+    <>
+      <form onSubmit={handleSignIn}>
+        <input
+          placeholder='Email...'
+          name='email'
+          value={userData.email}
+          onChange={(e) =>
+            setUserData((prev) => ({
+              ...prev,
+              email: e.target.value,
+            }))
+          }
+        />
+        <input
+          type='password'
+          placeholder='Password...'
+          name='password'
+          value={userData.password}
+          onChange={(e) =>
+            setUserData((prev) => ({
+              ...prev,
+              password: e.target.value,
+            }))
+          }
+        />
+        <button type='submit'>Sign in</button>
+      </form>
+      <button onClick={handleSignInWithGoogle}>Sign in with Google</button>
+      <button onClick={handleLogout}>Logout</button>
+    </>
   );
 };
 
