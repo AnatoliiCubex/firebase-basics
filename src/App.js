@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
-import "./App.css";
-import { AuthForm } from "./components/AuthForm";
-import { addDoc, collection, getDocs } from "firebase/firestore";
 import { database } from "./config/firebase";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+} from "firebase/firestore";
+
+import { AuthForm } from "./components/AuthForm";
+
+import "./App.css";
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -11,14 +19,14 @@ function App() {
     releaseDate: 0,
     receivedAnOscar: false,
   });
-  const [newMovieWasAdded, setNewMovieWasAdded] = useState(false);
+  const [isMoviesChanged, setIsMoviesChanged] = useState(false);
   const moviesCollection = collection(database, "movies");
 
   const onSubmitMovie = async (e) => {
     e.preventDefault();
     try {
       await addDoc(moviesCollection, newMovie);
-      setNewMovieWasAdded(true);
+      setIsMoviesChanged(true);
       setNewMovie({
         title: "",
         releaseDate: 0,
@@ -42,11 +50,19 @@ function App() {
     }
   };
 
+  const deleteMovie = async (movieId) => {
+    const movieDoc = doc(database, "movies", movieId);
+    try {
+      await deleteDoc(movieDoc);
+      setIsMoviesChanged(true);
+    } catch (error) {}
+  };
+
   useEffect(() => {
-    if (!newMovieWasAdded) return;
+    if (!isMoviesChanged) return;
     getMovies();
-    setNewMovieWasAdded(false);
-  }, [newMovieWasAdded]);
+    setIsMoviesChanged(false);
+  }, [isMoviesChanged]);
 
   useEffect(() => {
     getMovies();
@@ -109,6 +125,7 @@ function App() {
               {m.title}
             </h1>
             <p>Date: {m.releaseDate}</p>
+            <button onClick={() => deleteMovie(m.id)}>Delete movie</button>
           </div>
         ))}
       </div>
