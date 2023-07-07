@@ -6,6 +6,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 
 import { AuthForm } from "./components/AuthForm";
@@ -19,6 +20,7 @@ function App() {
     releaseDate: 0,
     receivedAnOscar: false,
   });
+  const [existingMovieNewTitle, setExistingMovieNewTitle] = useState("");
   const [isMoviesChanged, setIsMoviesChanged] = useState(false);
   const moviesCollection = collection(database, "movies");
 
@@ -50,12 +52,25 @@ function App() {
     }
   };
 
-  const deleteMovie = async (movieId) => {
-    const movieDoc = doc(database, "movies", movieId);
+  const deleteMovie = async (id) => {
+    const movieDoc = doc(database, "movies", id);
     try {
       await deleteDoc(movieDoc);
       setIsMoviesChanged(true);
-    } catch (error) {}
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const updateMovieTitle = async (id) => {
+    const movieDoc = doc(database, "movies", id);
+    try {
+      await updateDoc(movieDoc, { title: existingMovieNewTitle });
+      setExistingMovieNewTitle("");
+      setIsMoviesChanged(true);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -125,6 +140,12 @@ function App() {
               {m.title}
             </h1>
             <p>Date: {m.releaseDate}</p>
+            <input
+              placeholder='New title'
+              value={existingMovieNewTitle}
+              onChange={(e) => setExistingMovieNewTitle(e.target.value)}
+            />
+            <button onClick={() => updateMovieTitle(m.id)}>Submit</button>
             <button onClick={() => deleteMovie(m.id)}>Delete movie</button>
           </div>
         ))}
