@@ -9,38 +9,46 @@ function App() {
   const [newMovie, setNewMovie] = useState({
     title: "",
     releaseDate: 0,
-    receivedOscar: false,
+    receivedAnOscar: false,
   });
+  const [newMovieWasAdded, setNewMovieWasAdded] = useState(false);
   const moviesCollection = collection(database, "movies");
 
   const onSubmitMovie = async (e) => {
     e.preventDefault();
     try {
       await addDoc(moviesCollection, newMovie);
+      setNewMovieWasAdded(true);
       setNewMovie({
         title: "",
         releaseDate: 0,
-        receivedOscar: false,
+        receivedAnOscar: false,
       });
     } catch (err) {
       console.error(err);
     }
   };
 
-  useEffect(() => {
-    const getMovies = async () => {
-      try {
-        const data = await getDocs(moviesCollection);
-        const filteredData = data.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
-        setMovies(filteredData);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  const getMovies = async () => {
+    try {
+      const data = await getDocs(moviesCollection);
+      const filteredData = data.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setMovies(filteredData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  useEffect(() => {
+    if (!newMovieWasAdded) return;
+    getMovies();
+    setNewMovieWasAdded(false);
+  }, [newMovieWasAdded]);
+
+  useEffect(() => {
     getMovies();
   }, []);
 
@@ -76,11 +84,11 @@ function App() {
         <label>
           <input
             type='checkbox'
-            checked={newMovie.receivedOscar}
+            checked={newMovie.receivedAnOscar}
             onChange={(e) =>
               setNewMovie((prev) => ({
                 ...prev,
-                receivedOscar: !prev.receivedOscar,
+                receivedAnOscar: !prev.receivedAnOscar,
               }))
             }
           />
@@ -92,7 +100,12 @@ function App() {
       <div style={{ marginTop: "10rem" }}>
         {movies.map((m) => (
           <div key={m.id}>
-            <h1 style={{ color: m.receivedAnOscar ? "green" : "red" }}>
+            <h1
+              style={{
+                color: m.receivedAnOscar ? "green" : "red",
+                textTransform: "capitalize",
+              }}
+            >
               {m.title}
             </h1>
             <p>Date: {m.releaseDate}</p>
