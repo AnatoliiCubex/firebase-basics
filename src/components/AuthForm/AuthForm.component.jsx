@@ -69,9 +69,9 @@ export const AuthFormComponent = () => {
           }
         />
         <button type='submit'>Sign in</button>
+        <button onClick={handleSignInWithGoogle}>Sign in with Google</button>
+        <button onClick={handleLogout}>Logout</button>
       </form>
-      <button onClick={handleSignInWithGoogle}>Sign in with Google</button>
-      <button onClick={handleLogout}>Logout</button>
     </>
   );
 };
