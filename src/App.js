@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { database } from "./config/firebase";
+import { auth, database } from "./config/firebase";
 import {
   addDoc,
   collection,
@@ -27,7 +27,12 @@ function App() {
   const onSubmitMovie = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(moviesCollection, newMovie);
+      const movieObj = {
+        ...newMovie,
+        userId: auth?.currentUser?.uid,
+      };
+
+      await addDoc(moviesCollection, movieObj);
       setIsMoviesChanged(true);
       setNewMovie({
         title: "",
@@ -104,7 +109,7 @@ function App() {
           required
           type='number'
           min={1}
-          value={newMovie.releaseDate}
+          value={newMovie.releaseDate || ""}
           onChange={(e) =>
             setNewMovie((prev) => ({
               ...prev,
@@ -139,6 +144,7 @@ function App() {
             >
               {m.title}
             </h1>
+            <h2>Posted by #{m.userId}</h2>
             <p>Date: {m.releaseDate}</p>
             <input
               placeholder='New title'
