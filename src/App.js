@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { auth, database } from "./config/firebase";
+import { auth, database, storage } from "./config/firebase";
 import {
   addDoc,
   collection,
@@ -12,6 +12,7 @@ import {
 import { AuthForm } from "./components/AuthForm";
 
 import "./App.css";
+import { ref, uploadBytes } from "firebase/storage";
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -22,6 +23,7 @@ function App() {
   });
   const [existingMovieNewTitle, setExistingMovieNewTitle] = useState("");
   const [isMoviesChanged, setIsMoviesChanged] = useState(false);
+  const [file, setFile] = useState(null);
   const moviesCollection = collection(database, "movies");
 
   const onSubmitMovie = async (e) => {
@@ -73,6 +75,16 @@ function App() {
       await updateDoc(movieDoc, { title: existingMovieNewTitle });
       setExistingMovieNewTitle("");
       setIsMoviesChanged(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const uploadFile = async () => {
+    if (!file) return;
+    try {
+      const filesFolderRef = ref(storage, `projectFiles/${file.name}`);
+      await uploadBytes(filesFolderRef, file);
     } catch (err) {
       console.error(err);
     }
@@ -155,6 +167,12 @@ function App() {
             <button onClick={() => deleteMovie(m.id)}>Delete movie</button>
           </div>
         ))}
+      </div>
+
+      <div>
+        <input type='file' onChange={(e) => setFile(e.target.files[0])} />
+        <br />
+        <button onClick={uploadFile}>upload file</button>
       </div>
     </div>
   );
